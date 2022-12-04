@@ -58,7 +58,23 @@ func (u *User) OfflineUser() {
 	u.server.BroadCast(u, "用户已下线")
 }
 
+func (u *User) SendMsg(msg string) {
+	u.conn.Write([]byte(msg))
+}
+
 //用户信息广播
 func (u *User) BrocastMessage(msg string) {
-	u.server.BroadCast(u, msg)
+	//在线用户查询
+	if msg == "who" {
+		u.server.mapLock.Lock()
+		for _, user := range u.server.UserOnlineMap {
+			userinfo := "[" + user.Addr + "]" + user.Name + ":" + "在线..\n"
+			u.SendMsg(userinfo)
+		}
+		u.server.mapLock.Unlock()
+	} else {
+		//普通消息广播
+		u.server.BroadCast(u, msg)
+	}
+
 }
